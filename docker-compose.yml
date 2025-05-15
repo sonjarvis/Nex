@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: nex-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  auth-service:
+    build: ./auth_server
+    container_name: auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/authdb
+      - JWT_SECRET=MapleStoryPc
+    depends_on:
+      - mongo
+
+  event-service:
+    build: ./event_server
+    container_name: event-service
+    ports:
+      - "3002:3002"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/eventdb
+    depends_on:
+      - mongo
+
+  gateway-service:
+    build: ./gateway_server
+    container_name: gateway-service
+    ports:
+      - "3000:3000"
+    environment:
+      - JWT_SECRET=MapleStoryPc
+    depends_on:
+      - auth-service
+      - event-service
+
+volumes:
+  mongo-data:

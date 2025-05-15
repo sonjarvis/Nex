@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
+import { EventsModule } from './events/events.module';
+import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
 import { JwtStrategy } from './auth/jwt.strategy';
 
 @Module({
   imports: [
-    PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'secretKey',
-      signOptions: { expiresIn: '1h' },
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
+    HttpModule,
+    EventsModule,
+    AuthModule,
   ],
   providers: [JwtStrategy],
 })

@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 export class UserService {
     constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-    async create(createUserDto: CreateUserDto): Promise<User> {
+    async createUser(createUserDto: CreateUserDto): Promise<User> {
         const { username, password, role } = createUserDto;
 
         const existingUser = await this.userModel.findOne({ username });
@@ -29,6 +29,6 @@ export class UserService {
     }
 
     async findByUsername(username: string) {
-        return this.userModel.findOne({ username });
+        return this.userModel.findOne({ username }).exec();
     }
 }
