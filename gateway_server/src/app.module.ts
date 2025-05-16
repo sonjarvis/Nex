@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
-import { EventsModule } from './events/events.module';
-import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
+import { AuthModule } from './auth/auth.module';
+import { EventsModule } from './events/events.module';
+import { RewardsModule } from './rewards/rewards.module';
 import { JwtStrategy } from './auth/jwt.strategy';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     HttpModule,
-    EventsModule,
     AuthModule,
+    EventsModule,
+    RewardsModule,
   ],
   providers: [JwtStrategy],
 })

@@ -1,37 +1,77 @@
-import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import {
+    Controller,
+    Post,
+    Get,
+    Body,
+    Req,
+    UseGuards,
+    HttpException,
+    HttpStatus, Put, Param, Delete,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { AuthGuard } from '@nestjs/passport';
 import { firstValueFrom } from 'rxjs';
-import { JwtAuthGuard } from '../auth/jwt_auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
 
 @Controller('events')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(AuthGuard('jwt'))
 export class EventsController {
     constructor(private readonly httpService: HttpService) {}
 
-    @Get()
-    @Roles('USER', 'OPERATOR', 'ADMIN')
-    async getEvents(@Req() req) {
-        const response = await firstValueFrom(
-            this.httpService.get('http://event-service:3002/events')
-        );
-        return response.data;
-    }
-
-    @Get()
-    @Roles('USER', 'ADMIN', 'OPERATOR')
-    async findAll(@Req() req) {
-        console.log('🔥 Request User:', req.user);
-        return { message: `Hello ${req.user.username} (role: ${req.user.role})` };
-    }
-
     @Post()
-    @Roles('OPERATOR', 'ADMIN')
-    async createEvent(@Body() body: any, @Req() req) {
+    async create(@Req() req, @Body() body: any) {
+        try {
+            const token = req.headers.authorization;
+            const response = await firstValueFrom(
+              this.httpService.post('http://event-service:3002/events', body, {
+                  headers: { Authorization: token },
+              }),
+            );
+            return response.data;
+        } catch (error: any) {
+            throw new HttpException(
+              error.response?.data || 'Event create failed',
+              error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    @Put(':id')
+    async update(@Param('id') id: string, @Body() body: any, @Req() req) {
+        const token = req.headers.authorization;
         const response = await firstValueFrom(
-            this.httpService.post('http://event-service:3002/events', body)
+          this.httpService.put(`http://event-service:3002/events/${id}`, body, {
+              headers: { Authorization: token },
+          }),
         );
         return response.data;
+    }
+
+    @Delete(':id')
+    async delete(@Param('id') id: string, @Req() req) {
+        const token = req.headers.authorization;
+        const response = await firstValueFrom(
+          this.httpService.delete(`http://event-service:3002/events/${id}`, {
+              headers: { Authorization: token },
+          }),
+        );
+        return response.data;
+    }
+
+    @Get()
+    async findAll(@Req() req) {
+        try {
+            const token = req.headers.authorization;
+            const response = await firstValueFrom(
+              this.httpService.get('http://event-service:3002/events', {
+                  headers: { Authorization: token },
+              }),
+            );
+            return response.data;
+        } catch (error: any) {
+            throw new HttpException(
+              error.response?.data || 'Event fetch failed',
+              error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
 }
