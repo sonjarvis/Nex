@@ -66,8 +66,9 @@ export class EventsController {
                   headers: { Authorization: token },
               }),
             );
-            return response.data;
+            return response.data ?? [];
         } catch (error: any) {
+            console.error('❗ Gateway /events 프록시 실패:', error.response?.data || error.message);
             throw new HttpException(
               error.response?.data || 'Event fetch failed',
               error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,

@@ -9,8 +9,21 @@ export class Event extends Document {
   @Prop()
   description: string;
 
-  @Prop()
-  condition: string;
+  @Prop({
+    type: {
+      type: String, // LOGIN, QUEST 등
+      required: true,
+      enum: ['LOGIN', 'QUEST', 'BOSS'],
+    },
+    count: {
+      type: Number,
+      required: true,
+    },
+  })
+  condition: {
+    type: string;
+    count: number;
+  };
 
   @Prop()
   startDate: Date;
@@ -23,6 +36,7 @@ export class Event extends Document {
 
   @Prop()
   createdBy: string;
+
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);

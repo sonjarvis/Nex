@@ -6,7 +6,7 @@ export const useEvents = (token: string) => {
     const res = await apiClient.get('/events', {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return res.data;
+    return res.data || [];
   };
 
   const addEvent = async (title: string, description: string) => {

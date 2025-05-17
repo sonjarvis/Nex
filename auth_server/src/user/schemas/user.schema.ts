@@ -20,6 +20,15 @@ export class User {
 
     @Prop({ required: true, enum: Role })
     role: Role;
+
+    @Prop({ default: 0 })
+    loginCount: number;
+
+    @Prop({ default: 0 })
+    questCount: number;
+
+    @Prop({ default: 0 })
+    bossClearCount: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

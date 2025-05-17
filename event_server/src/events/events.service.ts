@@ -26,7 +26,13 @@ export class EventsService {
     return this.eventModel.findByIdAndDelete(id);
   }
 
-  async findAll(): Promise<Event[]> {
-    return this.eventModel.find().sort({ createdAt: -1 }).exec();
+  async findAll() {
+    try{
+      const events = await this.eventModel.find();
+      return events ?? [];
+    }catch (err){
+      console.error('❗ EventService findAll 오류:', err);
+      throw err;
+    }
   }
 }

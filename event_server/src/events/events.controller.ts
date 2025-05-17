@@ -15,18 +15,18 @@ export class EventsController {
 
   @Post()
   @Roles('ADMIN', 'OPERATOR')
-  create(@Body() dto: CreateEventDto, @Req() req) {
+  async create(@Body() dto: CreateEventDto, @Req() req) {
     return this.eventsService.create(dto, req.user);
   }
 
   @Get()
-  findAll() {
+  async findAll() {
     return this.eventsService.findAll();
   }
 
   @Delete(':id')
   @Roles('ADMIN', 'OPERATOR')
-  delete(@Param('id') id: string) {
+  async delete(@Param('id') id: string) {
     return this.eventsService.delete(id);
   }
 }

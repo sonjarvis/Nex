@@ -32,7 +32,6 @@ export const useAuth = () => {
       // 로그인 성공 시 localStorage 저장
       localStorage.setItem('token', res.data.access_token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-
       alert('로그인 성공!');
       return res.data;
     } catch (err: any) {

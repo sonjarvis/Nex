@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEvents } from '@/hooks/useEvents';
 import { deleteEvent } from '@/apis/events';
 import { useRouter } from 'next/router';
+import { requestReward } from '@/apis/rewardRequests';
 import axios from 'axios';
 
 export default function EventListPage() {
@@ -14,10 +15,12 @@ export default function EventListPage() {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [condition, setCondition] = useState('LOGIN_3_DAYS');
+  const [conditionType, setConditionType] = useState('LOGIN');
+  const [conditionCount, setConditionCount] = useState(1);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isActive, setIsActive] = useState(true);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -55,13 +58,17 @@ export default function EventListPage() {
 
   const handleCreate = async () => {
     if (!title || !description) return alert('제목과 내용을 입력하세요');
+
     try {
       const res = await axios.post(
         'http://localhost:3000/events',
         {
           title,
           description,
-          condition,
+          condition: {
+            type: conditionType,
+            count: conditionCount,
+          },
           startDate,
           endDate,
           isActive,
@@ -71,16 +78,41 @@ export default function EventListPage() {
         }
       );
       setEvents([...events, res.data]);
+
+      // reset
       setTitle('');
       setDescription('');
-      setCondition('');
+      setConditionType('LOGIN');
+      setConditionCount(1);
       setStartDate('');
       setEndDate('');
       setIsActive(true);
       setShowForm(false);
+
       alert('이벤트 등록 성공');
     } catch (err: any) {
       alert(err.response?.data?.message || '등록 실패');
+    }
+  };
+
+  const handleRequestReward = async (eventId: string) => {
+    try {
+
+      const result = await requestReward(eventId, token);
+
+      if (result.status === 'SUCCESS') {
+        alert(`✅ 보상 요청 성공!\n${result.reason || ''}`);
+      } else if (result.status === 'FAILED') {
+        alert(`❌ 보상 요청 실패: ${result.reason || '사유 없음'}`);
+      } else {
+        alert(`ℹ️ 알 수 없는 응답: ${JSON.stringify(result)}`);
+      }
+    } catch (err: any) {
+      alert(
+        `요청 실패: ${
+          err.response?.data?.message || err.message || '서버 오류'
+        }`
+      );
     }
   };
 
@@ -116,14 +148,22 @@ export default function EventListPage() {
               <label style={{ display: 'block', marginBottom: '0.5rem' }}>
                 조건:
                 <select
-                  value={condition}
-                  onChange={(e) => setCondition(e.target.value)}
+                  value={conditionType}
+                  onChange={(e) => setConditionType(e.target.value)}
                   style={{ marginLeft: '0.5rem' }}
                 >
-                  <option value="LOGIN_3_DAYS">로그인 3일</option>
-                  <option value="DAILY_QUEST">일일 퀘스트 완료</option>
-                  <option value="WEEKLY_BOSS">주간 보스 완료</option>
-                  <option value="FIRST_HARD_SUU">첫 하드 스우 클리어</option>
+                  <option value="LOGIN">로그인</option>
+                  <option value="QUEST">퀘스트 완료</option>
+                  <option value="BOSS">보스 클리어</option>
+                </select>
+                <select
+                  value={conditionCount}
+                  onChange={(e) => setConditionCount(Number(e.target.value))}
+                  style={{ marginLeft: '0.5rem' }}
+                >
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>{n}회 이상</option>
+                  ))}
                 </select>
               </label>
               <label>
@@ -167,29 +207,32 @@ export default function EventListPage() {
       ) : (
         <ul>
           {events.map((ev: any) => (
-            <li key={ev._id} style={{
-              marginBottom: '1rem',
-              opacity: ev.isActive ? 1 : 0.5,
-              border: '1px solid #ccc',
-              padding: '1rem',
-              borderRadius: '8px'
-            }}>
+            <li
+              key={ev._id}
+              style={{
+                marginBottom: '1rem',
+                opacity: ev.isActive ? 1 : 0.5,
+                border: '1px solid #ccc',
+                padding: '1rem',
+                borderRadius: '8px',
+              }}
+            >
               <strong>{ev.title}</strong>
               <br />
               <small>{ev.description}</small>
               <br />
               <small>
-                조건: {
-                {
-                  LOGIN_3_DAYS: '로그인 3일',
-                  DAILY_QUEST: '일일 퀘스트 완료',
-                  WEEKLY_BOSS: '주간 보스 완료',
-                  FIRST_HARD_SUU: '첫 하드 스우 클리어'
-                }[ev.condition] || '-'
-              }
+                조건:{' '}
+                {ev.condition
+                  ? `${{
+                    LOGIN: '로그인',
+                    QUEST: '퀘스트 완료',
+                    BOSS: '보스 클리어',
+                  }[ev.condition.type] || ev.condition.type} ${ev.condition.count}회 이상`
+                  : '-'}
               </small>
               <br />
-              <small>기간: {ev.startDate?.slice(0,10)} ~ {ev.endDate?.slice(0,10)}</small>
+              <small>기간: {ev.startDate?.slice(0, 10)} ~ {ev.endDate?.slice(0, 10)}</small>
               <br />
               <small>상태: {ev.isActive ? '활성' : '비활성'}</small>
               <br />
@@ -201,6 +244,14 @@ export default function EventListPage() {
                     🎁 보상 관리
                   </button>
                   <button onClick={() => handleDelete(ev._id)}>삭제</button>
+                </div>
+              )}
+
+              {user?.role === 'USER' && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <button onClick={() => handleRequestReward(ev._id)}>
+                    ✅ 보상 요청
+                  </button>
                 </div>
               )}
             </li>

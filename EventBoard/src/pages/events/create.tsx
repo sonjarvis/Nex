@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../hooks/useAuth';
 import { useEvents } from '../../hooks/useEvents';
@@ -6,6 +7,8 @@ import EventForm from '../../components/forms/EventForm';
 export default function CreateEventPage() {
   const { token } = useAuth();
   const { addEvent } = useEvents(token || '');
+  const [conditionType, setConditionType] = useState('LOGIN');
+  const [conditionCount, setConditionCount] = useState(1);
   const router = useRouter();
 
   const handleSubmit = async (title: string, desc: string) => {
