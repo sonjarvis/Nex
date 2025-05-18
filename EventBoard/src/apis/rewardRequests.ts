@@ -17,7 +17,16 @@ export const requestReward = async (eventId: string, token: string) => {
   }
 };
 
-export const getMyRewardRequests = async () => {
-  const res = await apiClient.get('/reward-requests');
+export const getMyRewardRequests = async (token: string) => {
+  const res = await apiClient.get('/reward-requests/me', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
+export const getAllRewardRequests = async (token: string) => {
+  const res = await apiClient.get('/reward-requests', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   return res.data;
 };

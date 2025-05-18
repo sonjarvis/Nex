@@ -16,6 +16,8 @@ export default function RewardPage() {
   const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState(1);
 
+  const rewardTypes = ['솔 에르다 조각', '이벤트 코인', '메이플 포인트'];
+
   useEffect(() => {
     if (eventId && token) {
       fetchRewards(eventId)
@@ -47,6 +49,7 @@ export default function RewardPage() {
   };
 
   const isAdminOrOperator = ['ADMIN', 'OPERATOR'].includes(user?.role);
+  const isRewardRegistered = rewards && rewards.length > 0;
 
   return (
     <div>
@@ -66,17 +69,24 @@ export default function RewardPage() {
         </ul>
       )}
 
-      {isAdminOrOperator && (
+      {isAdminOrOperator && !isRewardRegistered && (
         <>
           <h2>보상 등록</h2>
           <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="보상 이름"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+            <label>
+              보상 종류:
+              <select
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              >
+                <option value="">선택하세요</option>
+                {rewardTypes.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </label>
+            <br />
             <input
               type="text"
               placeholder="보상 설명"
@@ -84,17 +94,20 @@ export default function RewardPage() {
               onChange={(e) => setDescription(e.target.value)}
               required
             />
-            <input
-              type="number"
-              placeholder="수량"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              required
-            />
+            <label>
+              수량:
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                required
+              />
+            </label>
             <button type="submit">보상 등록</button>
           </form>
         </>
       )}
+      <button onClick={() => router.push('/events')}>⬅ 돌아가기</button>
     </div>
   );
 }

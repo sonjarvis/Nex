@@ -9,7 +9,13 @@ export class RewardRequest {
   userId: string;
 
   @Prop({ required: true })
+  username: string;
+
+  @Prop({ required: true })
   eventId: string;
+
+  @Prop({ required: true })
+  eventTitle: string;
 
   @Prop({ required: true, enum: ['SUCCESS', 'FAILED'] })
   status: 'SUCCESS' | 'FAILED';

@@ -45,4 +45,16 @@ export class RewardRequestsController {
       );
     }
   }
+
+  @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  async getMyRequests(@Req() req) {
+    const token = req.headers.authorization;
+    const response = await firstValueFrom(
+      this.httpService.get('http://event-service:3002/reward-requests/me', {
+        headers: { Authorization: token },
+      }),
+    );
+    return response.data;
+  }
 }

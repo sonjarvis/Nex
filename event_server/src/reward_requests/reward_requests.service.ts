@@ -10,10 +10,10 @@ import { firstValueFrom } from 'rxjs';
 export class RewardRequestsService {
   constructor(
     @InjectModel(RewardRequest.name)
-    private requestModel: Model<RewardRequest>,
+    private readonly requestModel: Model<RewardRequest>,
 
     @InjectModel(Event.name)
-    private eventModel: Model<Event>,
+    private readonly eventModel: Model<Event>,
 
     private readonly httpService: HttpService,
   ) {}
@@ -29,6 +29,12 @@ export class RewardRequestsService {
       } as any;
     }
 
+    // 유저 정보 조회 (username, loginCount)
+    const userRes = await this.httpService.axiosRef.get(
+      `http://auth-service:3001/users/${userId}`,
+    );
+    const user = userRes.data;
+
     // 이벤트 정보 조회
     const event = await this.eventModel.findById(eventId);
     if (!event || !event.condition) {
@@ -37,15 +43,11 @@ export class RewardRequestsService {
 
     const { type, count } = event.condition;
 
-    // 유저 정보 조회
-    let user;
-    try {
-      const res = await firstValueFrom(
-        this.httpService.get(`http://auth-service:3001/users/${userId}`)
-      );
-      user = res.data;
-    } catch (err) {
-      throw new HttpException('유저 정보를 불러올 수 없습니다', HttpStatus.BAD_REQUEST);
+    if (!user) {
+      return {
+        status: 'FAILED',
+        reason: '존재하지 않는 유저',
+      } as any;
     }
 
     // 이벤트 기간 및 상태 체크
@@ -88,7 +90,9 @@ export class RewardRequestsService {
 
     const result = await this.requestModel.create({
       userId,
+      username: user.username,
       eventId,
+      eventTitle : event.title,
       status: meetsCondition ? 'SUCCESS' : 'FAILED',
       reason: meetsCondition
         ? undefined
@@ -99,6 +103,22 @@ export class RewardRequestsService {
   }
 
   async findByUser(userId: string) {
-    return this.requestModel.find({ userId });
+    return this.requestModel.find({ userId }).populate(['eventId', 'userId']);
+  }
+
+  async findAll() {
+    return this.requestModel.find().sort({ createdAt: -1 });
+  }
+
+  // 관리자 보상 조회 필터
+  async findAllWithFilter(filter: { eventId?: string; status?: string }) {
+    const query: any = {};
+    if (filter.eventId) query.eventId = filter.eventId;
+    if (filter.status) query.status = filter.status;
+
+    return this.requestModel
+      .find(query)
+      .populate(['eventId', 'userId'])
+      .sort({ createdAt: -1 });
   }
 }

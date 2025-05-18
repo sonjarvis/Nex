@@ -32,6 +32,7 @@ export default function EventListPage() {
     const fetchEvents = async () => {
       try {
         const res = await getEvents();
+        console.log('불러온 이벤트 목록:', res);
         setEvents(res || []);
       } catch (err: any) {
         setError(err.message || '불러오기 실패');
@@ -123,6 +124,20 @@ export default function EventListPage() {
     <div>
       <h1>이벤트 목록</h1>
 
+      {(user?.role === 'ADMIN' || user?.role === 'OPERATOR' || user?.role === 'AUDITOR') && (
+        <div style={{ marginBottom: '1rem' }}>
+          <button onClick={() => router.push('/rewards-requests/history')}>
+            📄 전체 보상 요청 이력 보기
+          </button>
+        </div>
+      )}
+
+      {user?.role === 'USER' && (
+        <button onClick={() => router.push('/rewards-requests/me')}>
+          📄 내 보상 요청 이력 보기
+        </button>
+      )}
+
       {(user?.role === 'ADMIN' || user?.role === 'OPERATOR') && (
         <div style={{ marginBottom: '1rem' }}>
           <button onClick={() => setShowForm(!showForm)}>
@@ -153,8 +168,6 @@ export default function EventListPage() {
                   style={{ marginLeft: '0.5rem' }}
                 >
                   <option value="LOGIN">로그인</option>
-                  <option value="QUEST">퀘스트 완료</option>
-                  <option value="BOSS">보스 클리어</option>
                 </select>
                 <select
                   value={conditionCount}
@@ -226,8 +239,6 @@ export default function EventListPage() {
                 {ev.condition
                   ? `${{
                     LOGIN: '로그인',
-                    QUEST: '퀘스트 완료',
-                    BOSS: '보스 클리어',
                   }[ev.condition.type] || ev.condition.type} ${ev.condition.count}회 이상`
                   : '-'}
               </small>
