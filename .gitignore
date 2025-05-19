@@ -2,5 +2,8 @@
 "event_server/node_modules/" 
 "gateway_server/node_modules/"
 
-/.idea
-/node_modules
+node_modules
+dist
+.env
+.DS_Store
+*.log
