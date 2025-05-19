@@ -6,8 +6,19 @@ import { useRouter } from 'next/router';
 import { requestReward } from '@/apis/rewardRequests';
 import axios from 'axios';
 
+const fetchReward = async (eventId: string, token: string | null) => {
+  try {
+    const res = await axios.get(`http://localhost:3000/rewards/${eventId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data;
+  } catch {
+    return null;
+  }
+};
+
 export default function EventListPage() {
-  const { token, user } = useAuth();
+  const { token, user, logout } = useAuth();
   const { getEvents } = useEvents(token || '');
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +54,12 @@ export default function EventListPage() {
 
     fetchEvents();
   }, [token]);
+
+
+  const handleLogout = () => {
+    logout();
+    router.push('/auth/login');
+  };
 
   const handleDelete = async (id: string) => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
@@ -122,6 +139,11 @@ export default function EventListPage() {
 
   return (
     <div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+        <button onClick={handleLogout}>로그아웃</button>
+      </div>
+
       <h1>이벤트 목록</h1>
 
       {(user?.role === 'ADMIN' || user?.role === 'OPERATOR' || user?.role === 'AUDITOR') && (
@@ -258,11 +280,15 @@ export default function EventListPage() {
                 </div>
               )}
 
-              {user?.role === 'USER' && (
+              {(user?.role === 'USER' || user?.role === 'ADMIN') && (
                 <div style={{ marginTop: '0.5rem' }}>
-                  <button onClick={() => handleRequestReward(ev._id)}>
-                    ✅ 보상 요청
-                  </button>
+                  {ev.reward ? (
+                    <button onClick={() => handleRequestReward(ev._id)}>
+                      ✅ 보상 요청
+                    </button>
+                  ) : (
+                    <small style={{ color: 'gray' }}>※ 보상이 아직 등록되지 않았습니다</small>
+                  )}
                 </div>
               )}
             </li>

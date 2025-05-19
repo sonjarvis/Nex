@@ -21,7 +21,8 @@ export class EventsController {
 
   @Get()
   async findAll() {
-    return this.eventsService.findAll();
+    return this.eventsService.findAllWithReward();
+    /*return this.eventsService.findAll();*/
   }
 
   @Delete(':id')

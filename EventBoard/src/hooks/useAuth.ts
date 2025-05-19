@@ -13,6 +13,11 @@ export const useAuth = () => {
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+  };
+
   const register = async (username: string, password: string, role: string) => {
     try {
       const res = await registerUser(username, password, role);
@@ -39,5 +44,5 @@ export const useAuth = () => {
     }
   };
 
-  return { token, user, login, register };
+  return { token, user, login, register, logout };
 };

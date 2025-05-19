@@ -30,9 +30,7 @@ export class RewardRequestsService {
     }
 
     // 유저 정보 조회 (username, loginCount)
-    const userRes = await this.httpService.axiosRef.get(
-      `http://auth-service:3001/users/${userId}`,
-    );
+    const userRes = await this.httpService.axiosRef.get(`http://auth-service:3001/users/${userId}`);
     const user = userRes.data;
 
     // 이벤트 정보 조회
@@ -43,10 +41,10 @@ export class RewardRequestsService {
 
     const { type, count } = event.condition;
 
-    if (!user) {
+    if (!user || typeof user.loginCount !== 'number') {
       return {
         status: 'FAILED',
-        reason: '존재하지 않는 유저',
+        reason: '존재하지 않는 유저 또는 loginCount 누락',
       } as any;
     }
 
@@ -55,7 +53,9 @@ export class RewardRequestsService {
     if (!event.isActive) {
       return await this.requestModel.create({
         userId,
+        username: user.username || '알 수 없음',
         eventId,
+        eventTitle: event.title || '제목 없음',
         status: 'FAILED',
         reason: '비활성화된 이벤트입니다',
       });
@@ -64,7 +64,9 @@ export class RewardRequestsService {
     if (event.startDate && new Date(event.startDate) > now || event.endDate && new Date(event.endDate) < now) {
       return await this.requestModel.create({
         userId,
+        username: user.username || '알 수 없음',
         eventId,
+        eventTitle: event.title || '제목 없음',
         status: 'FAILED',
         reason: '이벤트 기간이 아닙니다',
       });

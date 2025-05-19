@@ -3,11 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Event } from './schemas/event.schema';
 import { Model } from 'mongoose';
 import { CreateEventDto } from './dto/create_event.dto';
+import { Reward } from '../rewards/schemas/reward.schema';
 
 @Injectable()
 export class EventsService {
   constructor(
-    @InjectModel(Event.name) private readonly eventModel: Model<Event>,
+    @InjectModel(Event.name) private eventModel: Model<Event>,
+    @InjectModel(Reward.name) private rewardModel: Model<Reward>,
   ) {}
 
   // 등록
@@ -34,5 +36,17 @@ export class EventsService {
       console.error('❗ EventService findAll 오류:', err);
       throw err;
     }
+  }
+
+  async findAllWithReward(): Promise<any[]> {
+    const events = await this.eventModel.find().lean();
+
+    const rewards = await this.rewardModel.find().lean();
+    const rewardMap = new Map(rewards.map(r => [r.eventId.toString(), r]));
+
+    return events.map(event => ({
+      ...event,
+      reward: rewardMap.get(event._id.toString()) || null,
+    }));
   }
 }

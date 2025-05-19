@@ -13,10 +13,19 @@ export default function RegisterPage() {
     }
   };
 
+  const goTologin = () => {
+    router.push('/auth/login');
+  };
+
   return (
     <div>
-      <h1>회원가입</h1>
+      <div>
+        <h1>회원가입</h1>
+        <button onClick={goTologin}>로그인 이동</button>
+      </div>
+      
       <RegisterForm onSubmit={handleRegister} />
     </div>
+    
   );
 }
