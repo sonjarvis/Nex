@@ -3,7 +3,8 @@
 **/build/
 
 # === Node Modules ===
-**/node_modules/
+/node_modules
+/.idea
 
 # === Logs ===
 logs
