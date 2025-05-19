@@ -43,5 +43,15 @@ services:
       - auth-service
       - event-service
 
+  eventboard:
+    build: ./eventboard
+    container_name: eventboard
+    ports:
+      - "3005:3005"
+    environment:
+      - NEXT_PUBLIC_API_BASE=http://gateway-service:3000
+    depends_on:
+      - gateway-service
+
 volumes:
   mongo-data:
