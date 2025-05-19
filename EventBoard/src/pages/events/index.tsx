@@ -77,6 +77,9 @@ export default function EventListPage() {
   const handleCreate = async () => {
     if (!title || !description) return alert('제목과 내용을 입력하세요');
 
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setHours(23, 59, 59, 999);
+
     try {
       const res = await axios.post(
         'http://localhost:3000/events',
@@ -88,7 +91,7 @@ export default function EventListPage() {
             count: conditionCount,
           },
           startDate,
-          endDate,
+          endDate: adjustedEndDate.toISOString(),
           isActive,
         },
         {
@@ -140,10 +143,6 @@ export default function EventListPage() {
   return (
     <div>
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-        <button onClick={handleLogout}>로그아웃</button>
-      </div>
-
       <h1>이벤트 목록</h1>
 
       {(user?.role === 'ADMIN' || user?.role === 'OPERATOR' || user?.role === 'AUDITOR') && (
@@ -159,6 +158,10 @@ export default function EventListPage() {
           📄 내 보상 요청 이력 보기
         </button>
       )}
+
+      <div style={{ marginBottom: '1rem' }}>
+        <button onClick={handleLogout}>로그아웃</button>
+      </div>
 
       {(user?.role === 'ADMIN' || user?.role === 'OPERATOR') && (
         <div style={{ marginBottom: '1rem' }}>
